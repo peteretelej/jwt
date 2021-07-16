@@ -3,7 +3,7 @@
 A JWT CLI written in go.
 
 Also includes:
-- A single html file web app for quickly decoding tokens: available at https://jwt-decode.etelej.com
+- A single html file web app for quickly decoding tokens: available online at [https://jwt.etelej.com/](https://jwt.etelej.com/))
   - File available at [./webapp](./tree/main/webapp) - uses [petite-vue](https://github.com/vuejs/petite-vue)
 
 ## Installation
