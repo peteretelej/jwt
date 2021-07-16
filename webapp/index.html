@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JWT Token Decode - quick decode JWT</title>
+  <meta name="description" content="Decode JWT Tokens" />
+  <script src="https://unpkg.com/petite-vue"></script>
+  <script type="module">
+    import { createApp } from 'https://unpkg.com/petite-vue?module'
+
+
+    function base64Decode(base64) {
+      let val = atob(base64.replace(/-/g, '+').replace(/_/g, '/'));
+      try {
+        const uridecoded = decodeURIComponent(val.split('').map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''))
+        val = uridecoded
+      } catch { }
+      return val;
+    }
+
+    createApp({
+      input: null,
+      errMsg: null,
+      header: null,
+      claims: null,
+      signature: null,
+      readableClaims: null,
+      decodeToken() {
+        this.errMsg = null;
+        this.header = null;
+        this.readableClaims=null;
+        if (!this.input) return;
+        const inputVal = this.input.trim()
+        try {
+          const parts = inputVal.split('.')
+          if (parts.length !== 3) {
+            throw new Error("invalid JWT token")
+          }
+          this.header = base64Decode(parts[0])
+          this.claims = base64Decode(parts[1])
+          this.signature = parts[2]
+          this.getReadableClaims()
+        } catch (e) {
+          this.errMsg = `Failed to decode token: ${e.message}`
+        }
+      },
+      getReadableClaims() {
+        if (!this.claims) return null;
+        const allClaims = JSON.parse(this.claims);
+        const claimsValues = [];
+        Object.keys(allClaims).map(k => {
+          const v = allClaims[k]
+          if ((typeof v === "number") && (v.toString().length === 10)) {
+            console.log("added")
+            const key =
+              k === "iat" ? "Issued At"
+                : k === "exp" ? "Expires At"
+                  : k === "nbf" ? "Not Before"
+                    : k;
+            claimsValues.push([key, new Date(v*1000)])
+          }
+        })
+        if (claimsValues.length > 0) {
+          this.readableClaims = claimsValues;
+        }
+        console.log("readableCLaims", this.readableClaims)
+      },
+      get decoded() {
+        return (this.header && this.claims && this.signature)
+      },
+      update: function (e) {
+        this.input = e.target.value
+        this.decodeToken()
+
+      },
+      renderPart(part) {
+        return JSON.stringify(JSON.parse(part), null, "\t")
+      },
+    }).mount('#editor')
+
+  </script>
+</head>
+
+<body>
+
+  <div id="editor">
+    <div class="input">
+      <h1>Quickly decode JWT tokens - <span style="font-size:0.8rem;color:#777">Single HTML file, no storage/analytics, safe & fast!</span></h1>
+      <textarea :value="input" @input="update" placeholder="Paste JWT Token here"></textarea>
+    </div>
+    <div class="output" style="position: relative;">
+      <div v-if="errMsg" class="error">
+        {{errMsg}}
+      </div>
+      <div v-if="decoded">
+        <div class>
+          <h3>Header</h3>
+          <pre>{{ renderPart(header) }}</pre>
+        </div>
+        <div>
+          <h3>Claims</h3>
+          <pre>{{ renderPart(claims) }}</pre>
+        </div>
+        <div>
+          <h3>Signature</h3>
+          <pre>{{ signature }}</pre>
+        </div>
+
+      </div>
+      <div v-if="readableClaims" class="claims">
+        <h4>Human Readable Claims</h4>
+        <li v-for="c in readableClaims">
+          <b>{{c[0]}}</b> - <span>{{c[1]}}</span>
+        </li>
+      </div>
+      <div style="border-top:1px solid #ccc; margin:10px; padding:10px; position: absolute; bottom:0;">
+       This is a just an alternative to quickly looking up token contents, hence the minimal UI. <b>No Support</b> for signature verification, and not planned.
+      <br/>
+      <i style="font-size: 0.8rem;">via bash &rarr; </i>
+      <code>function jwt-decode() { sed 's/\./\n/g' <<< $(cut -d. -f1,2 <<< $1) | base64 --decode | jq }</code>
+       </div>
+
+    </div>
+  </div>
+  <style>
+    html,
+    body,
+    #editor {
+      margin: 0;
+      height: 100%;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #333;
+      background-color: #efefef;
+    }
+
+    #editor {
+      display: flex;
+    }
+
+    .input,
+    .output {
+      width: 50%;
+      box-sizing: border-box;
+    }
+
+    .input {
+      border-right: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      padding: 0 10px;
+    }
+
+    .input h1 {
+      font-size: 1.2rem;
+    }
+
+    .input textarea {
+      resize: none;
+      outline: none;
+      border: none;
+      background-color: #dedede;
+      font-size: 14px;
+      font-family: 'Monaco', courier, monospace;
+      flex-grow: 1;
+      padding: 20px;
+
+    }
+
+    code {
+      color: #f66;
+    }
+
+    .error {
+      background-color: #F5B7B1;
+      color: #000;
+      padding: 20px;
+    }
+
+    .output {
+      padding: 20px;
+    }
+
+    .claims {
+      border-top: 1px solid #dedede;
+      margin: 20px 0;
+    }
+  </style>
+</body>
+
+</html>
