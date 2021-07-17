@@ -38,7 +38,7 @@ Generate JWT token
 
 Specify an expiry period for the generated token
 ```
-./jwt  --secret demopass --exp 1y--sign '{"user": "John Doe"}'
+./jwt  --secret demopass --exp 1y --sign '{"user": "John Doe"}'
 ```
 - Supports durations (eg year to second) such as `yr, mo, w, d, h,m,s`
 - examples: `--exp 6mo` (6 months), `--exp 2w` (2 weeks)
@@ -85,3 +85,4 @@ Decoding a token with multiple standard claims
 
 </details>
 
+License: **MIT**
