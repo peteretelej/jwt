@@ -86,53 +86,7 @@ func decode(jwtToken, key string) error {
 	if err != nil {
 		return fmt.Errorf("[jwt] failed to decode JWT claims: %v", err)
 	}
-	var stdClaims jwt.StandardClaims
-	if err := json.Unmarshal(claimsJSON, &stdClaims); err != nil {
-		return fmt.Errorf("unable to parse standard claims from JWT: %v", err)
-	}
-
-	issuedAt := timeFromUnix(stdClaims.IssuedAt)
-	expiresAt := timeFromUnix(stdClaims.ExpiresAt)
-	notBefore := timeFromUnix(stdClaims.NotBefore)
-	now := time.Now()
-	var meta string
-	if !issuedAt.IsZero() {
-		iat := issuedAt.Format(time.RFC822)
-		meta += "Issued At: " + iat
-		if issuedAt.After(now) {
-			meta += "\t// invalid time, issued in future"
-		} else {
-			meta += fmt.Sprintf("\t// %s ago", readableDuration(time.Since(issuedAt)))
-		}
-		meta += "\n"
-	}
-	if !notBefore.IsZero() {
-		nbf := notBefore.Format(time.RFC822)
-		meta += "Not Before: " + nbf
-		if now.Before(notBefore) {
-			meta += fmt.Sprintf("\t// cannot be used for %s", readableDuration(notBefore.Sub(now)))
-		}
-		meta += "\n"
-	}
-	if !expiresAt.IsZero() {
-		exp := expiresAt.Format(time.RFC822)
-		meta += "Expires At: " + exp
-		if now.After(expiresAt) {
-			meta += fmt.Sprintf("\t// expired %s ago", readableDuration(time.Since(expiresAt)))
-		} else {
-			meta += fmt.Sprintf("\t// expires in %s", readableDuration(expiresAt.Sub(now)))
-		}
-		meta += "\n"
-		var start time.Time
-		if start := issuedAt; start.IsZero() {
-			start = notBefore
-		}
-		if !start.IsZero() {
-			life := expiresAt.Sub(start)
-			meta += "Token Lifetime: " + readableDuration(life)
-			meta += "\n"
-		}
-	}
+	meta := expiryMetadata(claimsJSON)
 	if key != "" {
 		if validSecret {
 			meta += "JWT Token signature verified, key is valid\n"
@@ -260,4 +214,55 @@ func timeFromUnix(unixTime int64) time.Time {
 		return time.Time{}
 	}
 	return time.Unix(unixTime, 0)
+}
+
+func expiryMetadata(claimsJSON []byte) string {
+	var stdClaims jwt.StandardClaims
+	if err := json.Unmarshal(claimsJSON, &stdClaims); err != nil {
+		return ""
+	}
+
+	issuedAt := timeFromUnix(stdClaims.IssuedAt)
+	expiresAt := timeFromUnix(stdClaims.ExpiresAt)
+	notBefore := timeFromUnix(stdClaims.NotBefore)
+	now := time.Now()
+	var meta string
+	if !issuedAt.IsZero() {
+		iat := issuedAt.Format(time.RFC822)
+		meta += "Issued At: " + iat
+		if issuedAt.After(now) {
+			meta += "\t// invalid time, issued in future"
+		} else {
+			meta += fmt.Sprintf("\t// %s ago", readableDuration(time.Since(issuedAt)))
+		}
+		meta += "\n"
+	}
+	if !notBefore.IsZero() {
+		nbf := notBefore.Format(time.RFC822)
+		meta += "Not Before: " + nbf
+		if now.Before(notBefore) {
+			meta += fmt.Sprintf("\t// cannot be used for %s", readableDuration(notBefore.Sub(now)))
+		}
+		meta += "\n"
+	}
+	if !expiresAt.IsZero() {
+		exp := expiresAt.Format(time.RFC822)
+		meta += "Expires At: " + exp
+		if now.After(expiresAt) {
+			meta += fmt.Sprintf("\t// expired %s ago", readableDuration(time.Since(expiresAt)))
+		} else {
+			meta += fmt.Sprintf("\t// expires in %s", readableDuration(expiresAt.Sub(now)))
+		}
+		meta += "\n"
+		var start time.Time
+		if start := issuedAt; start.IsZero() {
+			start = notBefore
+		}
+		if !start.IsZero() {
+			life := expiresAt.Sub(start)
+			meta += "Token Lifetime: " + readableDuration(life)
+			meta += "\n"
+		}
+	}
+	return meta
 }
