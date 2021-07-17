@@ -5,13 +5,35 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Decode JWT Tokens</title>
+  <title>Decode JWT Tokens (single html file decoder)</title>
   <meta name="description" content="Decode JWT Tokens - Quickly decode JWT tokens using this single HTML file app" />
   <script src="https://unpkg.com/petite-vue"></script>
   <script type="module">
     import { createApp } from 'https://unpkg.com/petite-vue?module'
 
+    function readableDuration(durationMs) {
+      if (durationMs < 0) {
+        return null
+      }
+      const seconds = durationMs / 1000
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.ceil(minutes / 60);
+      const days = Math.ceil(hours / 24)
+      const weeks = Math.ceil(days / 7)
+      const months = Math.ceil(days / 30)
+      const years = Math.ceil(days / 365)
+      console.log("duration", durationMs)
+      console.log("hours", hours)
 
+      return years > 1 ? `${years} years`
+        : months > 1 ? `${months} months`
+          : weeks > 1 ? `${weeks} weeks`
+            : days > 0 ? `${days} days`
+              : hours > 0 ? `${hours}h`
+                : minutes > 0 ? `${minutes}m`
+                  : seconds > 1 ? `${seconds}s`
+                    : "just now";
+    }
     function base64Decode(base64) {
       let val = atob(base64.replace(/-/g, '+').replace(/_/g, '/'));
       try {
@@ -30,10 +52,17 @@
       claims: null,
       signature: null,
       readableClaims: null,
+      notBefore: null,
+      expired: null,
+      lifetime: null,
+      resetProps() {
+        this.errMsg =
+          this.header = this.claims = this.signature =
+          this.readableClaims = this.notBefore =
+          this.expired = this.lifetime = null;
+      },
       decodeToken() {
-        this.errMsg = null;
-        this.header = null;
-        this.readableClaims=null;
+        this.resetProps()
         if (!this.input) return;
         const inputVal = this.input.trim()
         try {
@@ -45,6 +74,7 @@
           this.claims = base64Decode(parts[1])
           this.signature = parts[2]
           this.getReadableClaims()
+          this.checkTimestamps()
         } catch (e) {
           this.errMsg = `Failed to decode token: ${e.message}`
         }
@@ -62,13 +92,39 @@
                 : k === "exp" ? "Expires At"
                   : k === "nbf" ? "Not Before"
                     : k;
-            claimsValues.push([key, new Date(v*1000)])
+            claimsValues.push([key, new Date(v * 1000)])
           }
         })
         if (claimsValues.length > 0) {
           this.readableClaims = claimsValues;
         }
-        console.log("readableCLaims", this.readableClaims)
+      },
+      checkTimestamps() {
+        if (!this.claims) return false;
+
+        const { nbf, iat, exp } = JSON.parse(this.claims);
+        console.log(this.claims)
+        console.log("iat", iat)
+        const now = new Date();
+
+        if (nbf) {
+          const nbfD = new Date(nbf * 1000)
+          if (nbfD > now) {
+            const d = nbfD - now
+            this.notBefore = readableDuration(d)
+          }
+        }
+        if (exp) {
+          const expD = new Date(exp * 1000)
+          console.log("exp", exp)
+          if (now > expD) {
+            const d = now - expD
+            this.expired = readableDuration(d)
+          }
+        }
+        console.log("expired", this.expired)
+        console.log("nbf", this.nbf)
+
       },
       get decoded() {
         return (this.header && this.claims && this.signature)
@@ -117,13 +173,20 @@
         <li v-for="c in readableClaims">
           <b>{{c[0]}}</b> - <span>{{c[1]}}</span>
         </li>
+        <div v-if="expired" class="expired">
+          Expired: {{expired}} ago
+        </div>
+        <div v-if="notBefore" class="notbefore">
+          Not Before: {{notBefore}} from now
+        </div>
       </div>
       <div style="border-top:1px solid #ccc; margin:10px; padding:10px; position: absolute; bottom:0;">
-       This is a just an alternative to quickly looking up token contents, hence the minimal UI. <b>No Support</b> for signature verification, and not planned.
-      <br/>
-      <i style="font-size: 0.8rem;">via bash &rarr; </i>
-      <code>function jwt-decode() { sed 's/\./\n/g' <<< $(cut -d. -f1,2 <<< $1) | base64 --decode | jq }</code>
-       </div>
+        This is a just an alternative to quickly looking up token contents, hence the minimal UI. <b>No Support</b> for
+        signature verification, and not planned.
+        <br />
+        <i style="font-size: 0.8rem;">via bash &rarr; </i>
+        <code>function jwt-decode() { sed 's/\./\n/g' <<< $(cut -d. -f1,2 <<< $1) | base64 --decode | jq }</code>
+      </div>
 
     </div>
   </div>
@@ -188,6 +251,15 @@
     .claims {
       border-top: 1px solid #dedede;
       margin: 20px 0;
+    }
+
+    .expired,
+    .notbefore {
+      background-color: #fdd;
+      font-weight: bold;
+      margin: 10px;
+      border-radius: 5px;
+      padding: 10px;
     }
   </style>
 </body>
