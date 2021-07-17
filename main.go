@@ -57,12 +57,13 @@ func main() {
 		log.Printf("%s", token)
 		return
 	}
-	if err := decode(flag.Arg(0)); err != nil {
+	key := *secret
+	if err := decode(flag.Arg(0), key); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func decode(jwtToken string) error {
+func decode(jwtToken, key string) error {
 	if jwtToken == "" {
 		return errors.New("[jwt] failed to decode, no token specified")
 	}
@@ -77,13 +78,6 @@ func decode(jwtToken string) error {
 	})
 	validSecret := err == nil
 
-	if *secret != "" {
-		if validSecret {
-			log.Printf("JWT Token signature verified, key is valid")
-		} else {
-			log.Printf("JWT Token signature not matching, key is not valid")
-		}
-	}
 	headerJSON, err := jwt.DecodeSegment(jwtParts[0])
 	if err != nil {
 		return fmt.Errorf("[jwt] failed to decode JWT header: %v", err)
@@ -136,6 +130,14 @@ func decode(jwtToken string) error {
 		if !start.IsZero() {
 			life := expiresAt.Sub(start)
 			meta += "Token Lifetime: " + readableDuration(life)
+			meta += "\n"
+		}
+	}
+	if key != "" {
+		if validSecret {
+			meta += "JWT Token signature verified, key is valid\n"
+		} else {
+			meta += "JWT Token signature not matching, key is not valid\n"
 		}
 	}
 

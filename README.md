@@ -1,10 +1,10 @@
 # jwt
 
-A JWT CLI written in go.
+A JWT CLI written in Go.
 
 Also includes:
 - A single html file web app for quickly decoding tokens: available online at [https://jwt.etelej.com/](https://jwt.etelej.com/))
-  - File available at [./webapp](./tree/main/webapp) - uses [petite-vue](https://github.com/vuejs/petite-vue)
+  - File available at [./webapp](https://github.com/peteretelej/jwt/tree/main/webapp) - uses [petite-vue](https://github.com/vuejs/petite-vue)
 
 ## Installation
 
@@ -33,12 +33,12 @@ Verify if token is signed by a secret
 
 Generate JWT token
 ```
-./jwt --sign '{"user": "John Doe"}' --secret demopass
+./jwt --secret demopass --sign '{"user": "John Doe"}' 
 ```
 
 Specify an expiry period for the generated token
 ```
-./jwt --sign '{"user": "John Doe"}' --secret demopass --exp 1y
+./jwt  --secret demopass --exp 1y--sign '{"user": "John Doe"}'
 ```
 - Supports durations (eg year to second) such as `yr, mo, w, d, h,m,s`
 - examples: `--exp 6mo` (6 months), `--exp 2w` (2 weeks)
@@ -55,7 +55,7 @@ Please enter a secret to sign the JWT (and press Enter)
 ```
 
 <details>
- <summary>**Usage Examples</summary>
+ <summary>Usage Examples</summary>
 
 Generating a signed JWT token
 ```
