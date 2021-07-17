@@ -8,7 +8,7 @@ Also includes:
 
 ## Installation
 
-Download executable for your OS from [Releases](./releases)
+Download executable for your OS from [Releases](https://github.com/peteretelej/jwt/releases/latest)
 - Works on most platforms: Windows, iOS, Linux etc
 
 Alternative installation:
