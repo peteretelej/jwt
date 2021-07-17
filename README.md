@@ -1,10 +1,14 @@
-# jwt
+# jwt CLI 
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/peteretelej/jwt)](https://goreportcard.com/report/github.com/peteretelej/jwt)
+[![license](https://img.shields.io/github/license/peteretelej/jwt.svg)](https://github.com/peteretelej/jwt/blob/master/LICENSE.md)
+[![GitHub release](https://img.shields.io/github/release/peteretelej/jwt.svg)](https://github.com/peteretelej/jwt/releases)
 
 A JWT CLI written in Go.
 
-Also includes:
-- A single html file web app for quickly decoding tokens: available online at [https://jwt.etelej.com/](https://jwt.etelej.com/))
-  - File available at [./webapp](https://github.com/peteretelej/jwt/tree/main/webapp) - uses [petite-vue](https://github.com/vuejs/petite-vue)
+Also includes: 
+- A single html file web app for quickly decoding JWT tokens: available online at [jwt.etelej.com](https://jwt.etelej.com/)
+  - You can grab the html file at [./webapp](https://github.com/peteretelej/jwt/tree/main/webapp) - uses [petite-vue](https://github.com/vuejs/petite-vue)
 
 ## Installation
 
@@ -47,7 +51,7 @@ Specify an expiry period for the generated token
 
 ### Tips
 If you don't want to paste secret as plain text in command line:
-  - do not specify the `--secret` argument, it will them prompt for pasting or typing secret
+  - do not specify the `--secret` argument, it will prompt pasting or typing secret (does not print the secret)
 
 ```
 ./jwt --sign '{"user": "Jane Doe"}'
