@@ -11,6 +11,11 @@ Also includes:
 Download executable for your OS from [Releases](./releases)
 - Works on most platforms: Windows, iOS, Linux etc
 
+Alternative installation:
+```
+go get github.com/peteretelej/jwt
+```
+
 ## Usage
 
 Decode token and print details in human readable format
@@ -21,32 +26,30 @@ Decode token and print details in human readable format
 ./jwt TOKEN
 ```
 
-Decode token, and print value as json 
-```
-./jwt -json TOKEN
-```
-
 Verify if token is signed by a secret
 ```
-./jwt TOKEN --secret SECRET
+./jwt --secret SECRET TOKEN 
 ```
 
-
-
-Create a token
-- Create a jwt token signed by a secret
+Generate JWT token
 ```
-./jwt --sign '{"user": "john doe"}' --secret "SECRET"
+./jwt --sign '{"user": "John Doe"}' --secret demopass
 ```
+
+Specify an expiry period for the generated token
+```
+./jwt --sign '{"user": "John Doe"}' --secret demopass --exp 1y
+```
+- Supports durations (eg year to second) such as `yr, mo, w, d, h,m,s`
+- examples: `--exp 6mo` (6 months), `--exp 2w` (2 weeks)
+
 
 
 ### Tips
-If you don't want to paste secret in command line:
-  - if you just specify `--secret` at the end, it will prompt for the secret which you can paste
+If you don't want to paste secret as plain text in command line:
+  - do not specify the `--secret` argument, it will them prompt for pasting or typing secret
 
 ```
-./jwt TOKEN --secret
-
-# output (prompts for secret, does not print)
-Please paste secret and press Enter to continue
+./jwt --sign '{"user": "Jane Doe"}'
+Please enter a secret to sign the JWT (and press Enter)
 ```
