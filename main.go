@@ -15,21 +15,20 @@ import (
 	"golang.org/x/term"
 )
 
-var (
-	sign   = flag.String("sign", "", "json to sign as claims")
-	secret = flag.String("secret", "", "secret to use in signing jwt token")
-	exp    = flag.String("exp", "", fmt.Sprintf(
-		"expiry - lifetime of secret (optional) (%s)", supportedUnits),
-	)
-	// color      = flag.Bool("color", false, "colorize output")
-	// onlyClaims = flag.Bool("claims", false, "only print claims")
-
-	// support intuitive flags
-	_      = flag.Bool("decode", false, "decode json (unused)")
-	encode = flag.String("encode", "", "encode jwt token (alias for --sign)")
-)
-
 func main() {
+	var (
+		sign   = flag.String("sign", "", "json to sign as claims")
+		secret = flag.String("secret", "", "secret to use in signing jwt token")
+		exp    = flag.String("exp", "", fmt.Sprintf(
+			"expiry - lifetime of secret (optional) (%s)", supportedUnits),
+		)
+		// color      = flag.Bool("color", false, "colorize output")
+		// onlyClaims = flag.Bool("claims", false, "only print claims")
+
+		// support intuitive flags
+		_      = flag.Bool("decode", false, "decode json (unused)")
+		encode = flag.String("encode", "", "encode jwt token (alias for --sign)")
+	)
 
 	flag.Parse()
 	log.SetFlags(0)
@@ -74,7 +73,7 @@ func decode(jwtToken, key string) error {
 
 	claims := jwt.MapClaims{}
 	_, err := jwt.ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(*secret), nil
+		return []byte(key), nil
 	})
 	validSecret := err == nil
 
@@ -255,7 +254,7 @@ func expiryMetadata(claimsJSON []byte) string {
 		}
 		meta += "\n"
 		var start time.Time
-		if start := issuedAt; start.IsZero() {
+		if start = issuedAt; start.IsZero() {
 			start = notBefore
 		}
 		if !start.IsZero() {

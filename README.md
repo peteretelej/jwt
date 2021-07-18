@@ -15,9 +15,9 @@ Also includes:
 Download executable for your OS from [Releases](https://github.com/peteretelej/jwt/releases/latest)
 - Works on most platforms: Windows, iOS, Linux etc
 
-Alternative installation:
+Alternative installation (with Go):
 ```
-go get github.com/peteretelej/jwt
+go get -u github.com/peteretelej/jwt
 ```
 
 ## Usage
