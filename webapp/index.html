@@ -140,6 +140,11 @@
     }).mount('#editor')
 
   </script>
+  <style>
+    [v-cloak] {
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
@@ -149,7 +154,7 @@
       <h1>Quickly decode JWT tokens <span style="color:rgba(0,0,0,0.2); font-size:0.8rem;font-style:italic">(this app is a single html file)</span></h1>
       <textarea :value="input" @input="update" placeholder="Paste JWT Token here"></textarea>
     </div>
-    <div class="output" style="position: relative;">
+    <div class="output" v-cloak style="position: relative;">
       <div v-if="errMsg" class="error">
         {{errMsg}}
       </div>
@@ -182,7 +187,7 @@
       </div>
       <div style="border-top:1px solid #ccc; margin:10px; padding:10px; position: absolute; bottom:0;">
         This is a just an alternative to quickly looking up token contents, hence the minimal UI. <b>No Support</b> for
-        signature verification, and not planned.
+        signature verification, and not planned. <b>Open-source: <a href="https://github.com/peteretelej/jwt/blob/main/webapp/index.html">github</a>.</b>
         <br />
         <i style="font-size: 0.8rem;">via bash &rarr; </i>
         <code>function jwt-decode() { sed 's/\./\n/g' <<< $(cut -d. -f1,2 <<< $1) | base64 --decode | jq }</code>
